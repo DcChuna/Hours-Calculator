@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arbeitszeiten erfassen</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --input-bg: #f8fafc;
+      --input-focus: #ffffff;
+      --border-color: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --success: #16a34a;
+      --danger: #ef4444;
+      --danger-bg: #fef2f2;
+      --radius: 12px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      margin: 0;
+      padding: 40px 16px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 860px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .date-header {
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin: 0 0 28px 0;
+    }
+
+    .grid-header {
+      display: grid;
+      grid-template-columns: 140px 140px 80px 1fr 40px;
+      gap: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      padding: 0 8px;
+    }
+
+    .time-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .time-row {
+      display: grid;
+      grid-template-columns: 140px 140px 80px 1fr 40px;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.5);
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      transition: var(--transition);
+      animation: slideDown 0.25s ease-out forwards;
+    }
+
+    .time-row:hover {
+      border-color: var(--border-color);
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .time-row.removing {
+      animation: slideUpFade 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 9px 12px;
+      background-color: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      outline: none;
+      transition: var(--transition);
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      background-color: var(--input-focus);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+
+    .total-time {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .btn-delete:hover {
+      color: var(--danger);
+      background-color: var(--danger-bg);
+    }
+
+    .btn-delete svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .actions {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-add {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-add:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-reset {
+      background-color: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-reset:hover {
+      background-color: var(--danger-bg);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .grand-total {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .grand-total span {
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .target-card {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      background: rgba(255, 255, 255, 0.6);
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+    }
+
+    .stat-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-value.pos { color: var(--success); }
+    .stat-value.neg { color: var(--danger); }
+    .stat-value.neutral { color: var(--text-main); }
+
+    /* Footer / Credit */
+    .footer-credit {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUpFade {
+      from { opacity: 1; transform: scale(1); max-height: 60px; }
+      to { opacity: 0; transform: scale(0.95); max-height: 0; padding: 0; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="date-header" id="current-date">Freitag, 14. August 2026</div>
+
+    <div class="card">
+      <h1 class="card-title">Arbeitszeiten erfassen</h1>
+
+      <div class="grid-header">
+        <div>Beginn</div>
+        <div>Ende</div>
+        <div>Total</div>
+        <div>Kommentar</div>
+        <div></div>
+      </div>
+
+      <div class="time-rows" id="rows-container"></div>
+
+      <div class="actions">
+        <div class="btn-group">
+          <button class="btn-add" id="add-row-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Zeile hinzufügen
+          </button>
+          <button class="btn-reset" id="reset-btn">Reset</button>
+        </div>
+        <div class="grand-total">Gesamtsumme: <span id="grand-total-val">00:00</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size: 1.2rem; margin-top:0; margin-bottom: 16px;">Sollzeit-Berechnung (08:12)</h2>
+      <div class="target-card">
+        <div class="stat-box">
+          <label class="stat-label">Bestehendes Zeitguthaben ( +/- )</label>
+          <input type="text" id="reserve-input" placeholder="+00:00 / -00:00" maxlength="7" style="margin-top:4px;">
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Restzeit bis 08:12</div>
+          <div class="stat-value neutral" id="remaining-time">08:12</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Tages-Saldo (Soll 08:12)</div>
+          <div class="stat-value neutral" id="day-saldo">00:00</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Neues Zeitguthaben</div>
+          <div class="stat-value neutral" id="total-reserve">00:00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Футер з авторством -->
+    <div class="footer-credit">
+      Made by Nazar (with using Gemini)
+    </div>
+
+  </div>
+
+  <script>
+    const TARGET_MINUTES = 8 * 60 + 12;
+
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('de-DE', options);
+
+    const container = document.getElementById('rows-container');
+    const grandTotalVal = document.getElementById('grand-total-val');
+    const reserveInput = document.getElementById('reserve-input');
+    const remainingTimeEl = document.getElementById('remaining-time');
+    const daySaldoEl = document.getElementById('day-saldo');
+    const totalReserveEl = document.getElementById('total-reserve');
+
+    function formatTimeInput(value) {
+      let isNeg = value.includes('-');
+      let digits = value.replace(/\D/g, '');
+      if (digits.length > 4) digits = digits.substring(0, 4);
+      let res = digits;
+      if (digits.length >= 3) {
+        res = digits.substring(0, 2) + ':' + digits.substring(2);
+      }
+      return (isNeg ? '-' : '') + res;
+    }
+
+    function parseTimeToMinutes(timeStr) {
+      if (!timeStr) return null;
+      let isNeg = timeStr.includes('-');
+      let clean = timeStr.replace('-', '');
+      if (!clean.includes(':')) return null;
+      const [h, m] = clean.split(':').map(Number);
+      if (isNaN(h) || isNaN(m)) return null;
+      let mins = h * 60 + m;
+      return isNeg ? -mins : mins;
+    }
+
+    function formatMinutes(mins, showPlus = false) {
+      let isNeg = mins < 0;
+      let absMins = Math.abs(mins);
+      const h = Math.floor(absMins / 60);
+      const m = absMins % 60;
+      let formatted = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+      if (isNeg) return '-' + formatted;
+      if (showPlus && mins > 0) return '+' + formatted;
+      return formatted;
+    }
+
+    function createRowData(beginn = '', ende = '', kommentar = '') {
+      const row = document.createElement('div');
+      row.className = 'time-row';
+      row.innerHTML = `
+        <div class="input-group">
+          <label>Beginn *</label>
+          <input type="text" class="input-begin" placeholder="HH:MM" maxlength="5" value="${beginn}">
+        </div>
+        <div class="input-group">
+          <label>Ende *</label>
+          <input type="text" class="input-ende" placeholder="HH:MM" maxlength="5" value="${ende}">
+        </div>
+        <div class="total-time">00:00</div>
+        <div class="input-group">
+          <label>Kommentar</label>
+          <input type="text" class="input-kommentar" value="${kommentar}">
+        </div>
+        <button class="btn-delete" title="Zeile löschen">
+          <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        </button>
+      `;
+      container.appendChild(row);
+      updateRow(row);
+    }
+
+    function updateRow(row) {
+      const start = parseTimeToMinutes(row.querySelector('.input-begin').value);
+      const end = parseTimeToMinutes(row.querySelector('.input-ende').value);
+      const totalEl = row.querySelector('.total-time');
+
+      if (start !== null && end !== null) {
+        let diff = end - start;
+        if (diff < 0) diff += 24 * 60;
+        totalEl.textContent = formatMinutes(diff);
+        totalEl.dataset.minutes = diff;
+      } else {
+        totalEl.textContent = '00:00';
+        totalEl.dataset.minutes = 0;
+      }
+      recalculateGrandTotal();
+      saveState();
+    }
+
+    function recalculateGrandTotal() {
+      let workSum = 0;
+      document.querySelectorAll('.total-time').forEach(el => {
+        workSum += parseInt(el.dataset.minutes || 0, 10);
+      });
+      grandTotalVal.textContent = formatMinutes(workSum);
+
+      let remaining = TARGET_MINUTES - workSum;
+      if (remaining > 0) {
+        remainingTimeEl.textContent = formatMinutes(remaining);
+        remainingTimeEl.className = 'stat-value neg';
+      } else if (remaining === 0) {
+        remainingTimeEl.textContent = '00:00 (Soll erreicht)';
+        remainingTimeEl.className = 'stat-value pos';
+      } else {
+        remainingTimeEl.textContent = '+' + formatMinutes(Math.abs(remaining)) + ' (Überzeit)';
+        remainingTimeEl.className = 'stat-value pos';
+      }
+
+      let daySaldo = workSum - TARGET_MINUTES;
+      daySaldoEl.textContent = formatMinutes(daySaldo, true);
+      daySaldoEl.className = 'stat-value ' + (daySaldo > 0 ? 'pos' : daySaldo < 0 ? 'neg' : 'neutral');
+
+      let baseReserve = parseTimeToMinutes(reserveInput.value) || 0;
+      let newTotalReserve = baseReserve + daySaldo;
+      totalReserveEl.textContent = formatMinutes(newTotalReserve, true);
+      totalReserveEl.className = 'stat-value ' + (newTotalReserve > 0 ? 'pos' : newTotalReserve < 0 ? 'neg' : 'neutral');
+    }
+
+    function saveState() {
+      const state = [];
+      document.querySelectorAll('.time-row').forEach(row => {
+        state.push({
+          b: row.querySelector('.input-begin').value,
+          e: row.querySelector('.input-ende').value,
+          k: row.querySelector('.input-kommentar').value
+        });
+      });
+      localStorage.setItem('arbeitszeiten_state_v3', JSON.stringify(state));
+      localStorage.setItem('arbeitszeiten_reserve', reserveInput.value);
+    }
+
+    function loadState() {
+      const savedReserve = localStorage.getItem('arbeitszeiten_reserve');
+      if (savedReserve !== null) {
+        reserveInput.value = savedReserve;
+      }
+
+      const saved = localStorage.getItem('arbeitszeiten_state_v3');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.length) {
+          data.forEach(item => createRowData(item.b, item.e, item.k));
+          return;
+        }
+      }
+      createRowData('', '', '');
+      createRowData('', '', '');
+    }
+
+    container.addEventListener('input', (e) => {
+      const target = e.target;
+      if (target.classList.contains('input-begin') || target.classList.contains('input-ende')) {
+        target.value = formatTimeInput(target.value);
+      }
+      const row = target.closest('.time-row');
+      if (row) updateRow(row);
+    });
+
+    reserveInput.addEventListener('input', () => {
+      reserveInput.value = formatTimeInput(reserveInput.value);
+      recalculateGrandTotal();
+      saveState();
+    });
+
+    container.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-delete');
+      if (btn) {
+        const row = btn.closest('.time-row');
+        row.classList.add('removing');
+        row.addEventListener('animationend', () => {
+          row.remove();
+          recalculateGrandTotal();
+          saveState();
+        });
+      }
+    });
+
+    document.getElementById('add-row-btn').addEventListener('click', () => {
+      createRowData('', '', '');
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      localStorage.clear();
+      container.innerHTML = '';
+      reserveInput.value = '';
+      createRowData('', '', '');
+      createRowData('', '', '');
+      recalculateGrandTotal();
+    });
+
+    loadState();
+  </script>
+</body>
+</html>
