@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import firebase, { auth, db } from './firebase';
+import { Analytics } from '@vercel/analytics/react';
 
 const EMAIL_DOMAIN = 'arbeitszeiten.local';
 
@@ -1456,6 +1457,7 @@ export default function App() {
       <div className="footer-credit">
         Made by Nazar &amp; Cillian (with using Gemini &amp; Claude)
       </div>
+      <Analytics />
     </div>
   );
 }
