@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import type { User } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient';
 
-const EMAIL_DOMAIN = 'arbeitszeiten.local';
+const EMAIL_DOMAIN = 'arbeitszeiten.app';
 
 function getTargetMinutesForDate(d: string): number {
   if (!d) return 8 * 60 + 12;
