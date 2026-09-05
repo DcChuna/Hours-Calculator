@@ -1,0 +1,6 @@
+{
+  "name": "Arbeitszeiten erfassen & Synchronisation",
+  "description": "Erfassung von täglichen Arbeitszeiten mit Vormittag/Nachmittag-Blöcken, Sollzeit-Berechnung (08:12), Überstunden-Übersicht und Echtzeit-Synchronisation für alle Tage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
